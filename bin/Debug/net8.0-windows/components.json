@@ -1,0 +1,16 @@
+[
+  {
+    "Type": "Button",
+    "Name": "btnEdit",
+    "X": 16,
+    "Y": 18,
+    "Text": "D\u00FCzenle"
+  },
+  {
+    "Type": "DataGridView",
+    "Name": "DataGrid",
+    "X": 100,
+    "Y": 200,
+    "Text": "DataGrid"
+  }
+]

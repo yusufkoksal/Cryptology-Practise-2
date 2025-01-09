@@ -28,32 +28,48 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnEdit = new Button();
-            this.SuspendLayout();
+            btnEdit = new Button();
+            button1 = new Button();
+            SuspendLayout();
             // 
             // btnEdit
             // 
-            this.btnEdit.Location = new System.Drawing.Point(12, 12);
-            this.btnEdit.Name = "btnEdit";
-            this.btnEdit.Size = new System.Drawing.Size(75, 23);
-            this.btnEdit.TabIndex = 0;
-            this.btnEdit.Text = "Düzenle";
-            this.btnEdit.UseVisualStyleBackColor = true;
-            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
+            btnEdit.Location = new Point(16, 18);
+            btnEdit.Margin = new Padding(4, 5, 4, 5);
+            btnEdit.Name = "btnEdit";
+            btnEdit.Size = new Size(100, 35);
+            btnEdit.TabIndex = 0;
+            btnEdit.Text = "Düzenle";
+            btnEdit.UseVisualStyleBackColor = true;
+            btnEdit.Click += btnEdit_Click;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(12, 569);
+            button1.Name = "button1";
+            button1.Size = new Size(94, 29);
+            button1.TabIndex = 1;
+            button1.Text = "Reset";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += resetButtonClick;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 261);
-            this.Controls.Add(this.btnEdit);
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(872, 610);
+            Controls.Add(button1);
+            Controls.Add(btnEdit);
+            Margin = new Padding(4, 5, 4, 5);
+            Name = "Form1";
+            Text = "Form1";
+            Load += Form1_Load;
+            ResumeLayout(false);
         }
 
         #endregion
 
         private Button btnEdit;
+        private Button button1;
     }
 }

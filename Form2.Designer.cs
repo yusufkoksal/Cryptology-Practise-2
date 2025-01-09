@@ -6,9 +6,12 @@
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+
+        // Form elemanlarını tanımla
         private ComboBox comboBoxComponents;
         private TextBox textBoxX;
         private TextBox textBoxY;
+        private TextBox componentName;
         private Button btnAdd;
 
         /// <summary>
@@ -32,65 +35,76 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.comboBoxComponents = new ComboBox();
-            this.textBoxX = new TextBox();
-            this.textBoxY = new TextBox();
-            this.btnAdd = new Button();
-            this.SuspendLayout();
-            // 
-            // comboBoxComponents
-            // 
-            this.comboBoxComponents.FormattingEnabled = true;
-            this.comboBoxComponents.Items.AddRange(new object[] {
-            "Button",
-            "Label",
-            "DataGrid"});
-            this.comboBoxComponents.Location = new System.Drawing.Point(12, 12);
-            this.comboBoxComponents.Name = "comboBoxComponents";
-            this.comboBoxComponents.Size = new System.Drawing.Size(121, 21);
-            this.comboBoxComponents.TabIndex = 0;
-            // 
-            // textBoxX
-            // 
-            this.textBoxX.Location = new System.Drawing.Point(12, 39);
-            this.textBoxX.Name = "textBoxX";
-            this.textBoxX.Size = new System.Drawing.Size(100, 20);
-            this.textBoxX.TabIndex = 1;
-            this.textBoxX.PlaceholderText = "X";
-            // 
-            // textBoxY
-            // 
-            this.textBoxY.Location = new System.Drawing.Point(12, 65);
-            this.textBoxY.Name = "textBoxY";
-            this.textBoxY.Size = new System.Drawing.Size(100, 20);
-            this.textBoxY.TabIndex = 2;
-            this.textBoxY.PlaceholderText = "Y";
-            // 
-            // btnAdd
-            // 
-            this.btnAdd.Location = new System.Drawing.Point(12, 91);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(75, 23);
-            this.btnAdd.TabIndex = 3;
-            this.btnAdd.Text = "Ekle";
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
-            // 
-            // Form2
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 261);
-            this.Controls.Add(this.btnAdd);
-            this.Controls.Add(this.textBoxY);
-            this.Controls.Add(this.textBoxX);
-            this.Controls.Add(this.comboBoxComponents);
+            components = new System.ComponentModel.Container();
+
+            // ComboBox ayarları
+            comboBoxComponents = new ComboBox();
+            comboBoxComponents.FormattingEnabled = true;
+            comboBoxComponents.Items.AddRange(new object[] { "Button", "Label", "DataGrid" });
+            comboBoxComponents.Location = new Point(20, 20);
+            comboBoxComponents.Name = "comboBoxComponents";
+            comboBoxComponents.Size = new Size(250, 23);
+            comboBoxComponents.TabIndex = 0;
+            comboBoxComponents.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            // X koordinatı için TextBox
+            textBoxX = new TextBox();
+            textBoxX.Location = new Point(20, 60);
+            textBoxX.Name = "textBoxX";
+            textBoxX.PlaceholderText = "X Koordinatı";
+            textBoxX.Size = new Size(250, 23);
+            textBoxX.TabIndex = 1;
+
+            // Y koordinatı için TextBox
+            textBoxY = new TextBox();
+            textBoxY.Location = new Point(20, 100);
+            textBoxY.Name = "textBoxY";
+            textBoxY.PlaceholderText = "Y Koordinatı";
+            textBoxY.Size = new Size(250, 23);
+            textBoxY.TabIndex = 2;
+
+            // Component ismi için TextBox
+            componentName = new TextBox();
+            componentName.Location = new Point(20, 140);
+            componentName.Name = "componentName";
+            componentName.PlaceholderText = "Component İsmi";
+            componentName.Size = new Size(250, 23);
+            componentName.TabIndex = 3;
+
+            // Ekle butonu
+            btnAdd = new Button();
+            btnAdd.Location = new Point(20, 180);
+            btnAdd.Name = "btnAdd";
+            btnAdd.Size = new Size(250, 30);
+            btnAdd.TabIndex = 4;
+            btnAdd.Text = "Ekle";
+            btnAdd.UseVisualStyleBackColor = true;
+            btnAdd.Click += new EventHandler(btnAdd_Click);
+
+            // Form ayarları
+            this.AutoScaleDimensions = new SizeF(7F, 15F);
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.ClientSize = new Size(500, 600); // Form boyutunu büyüttük
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = true;
             this.Name = "Form2";
-            this.Text = "Form2";
+            this.Text = "Component Ekle";
+            this.Padding = new Padding(20);
+
+            // Kontrolleri forma ekle
+            this.Controls.AddRange(new Control[] {
+        comboBoxComponents,
+        textBoxX,
+        textBoxY,
+        componentName,
+        btnAdd
+    });
+
             this.ResumeLayout(false);
             this.PerformLayout();
         }
-
 
         #endregion
     }
