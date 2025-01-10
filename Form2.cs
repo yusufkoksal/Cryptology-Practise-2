@@ -19,12 +19,6 @@ namespace EsiCrypto3
 
         private void InitializeDataGridComponents()
         {
-            // DataGrid seçeneğini ComboBox'a ekle (eğer yoksa)
-            if (!comboBoxComponents.Items.Contains("DataGrid"))
-            {
-                comboBoxComponents.Items.Add("DataGrid");
-            }
-
             // ComboBox seçim olayını dinle
             comboBoxComponents.SelectedIndexChanged += ComboBoxComponents_SelectedIndexChanged;
         }
@@ -46,7 +40,7 @@ namespace EsiCrypto3
             // Sütun sayısı seçici
             columnCountInput = new NumericUpDown
             {
-                Location = new Point(20, 230), // btnAdd'den sonra
+                Location = new Point(20, 230),
                 Size = new Size(250, 25),
                 Minimum = 1,
                 Maximum = 10,
@@ -57,8 +51,8 @@ namespace EsiCrypto3
             // Sütun özellikleri paneli
             columnPanel = new FlowLayoutPanel
             {
-                Location = new Point(20, 270), // columnCountInput'tan sonra
-                Size = new Size(460, 280), // Form genişliğine uygun
+                Location = new Point(20, 270),
+                Size = new Size(460, 280),
                 FlowDirection = FlowDirection.TopDown,
                 AutoScroll = true,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -94,7 +88,7 @@ namespace EsiCrypto3
         {
             Panel inputGroup = new Panel
             {
-                Size = new Size(440, 35), // Panel genişliğine uygun
+                Size = new Size(440, 35),
                 Margin = new Padding(3)
             };
 
@@ -119,7 +113,7 @@ namespace EsiCrypto3
             "Date",
             "Boolean",
             "Currency",
-            "Encrypted" // AES256 şifrelenmiş metin için
+            "Encrypted"
             });
             typeInput.SelectedIndex = 0;
 
@@ -237,44 +231,54 @@ namespace EsiCrypto3
 
                 DataGridViewColumn column = CreateColumn(NameInput.Text, TypeInput.SelectedItem.ToString());
                 dataGrid.Columns.Add(column);
+                CreateCrudButtons(dataGrid);
             }
 
-            // CRUD butonlarını oluştur ve yerleştir
+
+            return dataGrid;
+        }
+
+        private void CreateCrudButtons(DataGridView dataGrid)
+        {
+            // Add Button
             Button addButton = new Button
             {
-                Name = $"{name}_AddBtn",
+                Name = $"{dataGrid.Name}_AddBtn",
                 Text = "Ekle",
                 Size = new Size(80, 30),
                 Location = new Point(dataGrid.Right - 270, dataGrid.Bottom - 30)
             };
+            addButton.Click += (s, e) => AddRow(dataGrid);
 
+            // Update Button
             Button updateButton = new Button
             {
-                Name = $"{name}_UpdateBtn",
+                Name = $"{dataGrid.Name}_UpdateBtn",
                 Text = "Güncelle",
                 Size = new Size(80, 30),
                 Location = new Point(dataGrid.Right - 180, dataGrid.Bottom - 30)
             };
+            updateButton.Click += (s, e) => UpdateRow(dataGrid);
 
+            // Delete Button
             Button deleteButton = new Button
             {
-                Name = $"{name}_DeleteBtn",
+                Name = $"{dataGrid.Name}_DeleteBtn",
                 Text = "Sil",
                 Size = new Size(80, 30),
                 Location = new Point(dataGrid.Right - 90, dataGrid.Bottom - 30)
             };
-
-            // Butonların click eventlerini ekle
-            addButton.Click += (s, e) => AddRow(dataGrid);
-            updateButton.Click += (s, e) => UpdateRow(dataGrid);
             deleteButton.Click += (s, e) => DeleteRow(dataGrid);
+
+            // Butonları forma ekle
+            this.Controls.Add(addButton);
+            this.Controls.Add(updateButton);
+            this.Controls.Add(deleteButton);
 
             // Butonları forma ekle
             mainForm.AddControlToForm(addButton);
             mainForm.AddControlToForm(updateButton);
             mainForm.AddControlToForm(deleteButton);
-
-            return dataGrid;
         }
 
         private DataGridViewColumn CreateColumn(string name, string type)
@@ -320,27 +324,16 @@ namespace EsiCrypto3
             return column;
         }
 
-        private void AddRow(DataGridView dataGrid)
+        public void AddRow(DataGridView dataGrid)
         {
             try
             {
-                int rowIndex = dataGrid.Rows.Add();
-                DataGridViewRow row = dataGrid.Rows[rowIndex];
-
-                foreach (DataGridViewColumn column in dataGrid.Columns)
+                using (var entryForm = new DataEntryForm(dataGrid, mainForm))
                 {
-                    string value = Microsoft.VisualBasic.Interaction.InputBox(
-                        $"'{column.HeaderText}' için değer girin:",
-                        "Veri Girişi",
-                        "");
-
-                    if (column.ValueType == typeof(string) && column.Name.Contains("Encrypted"))
+                    if (entryForm.ShowDialog() == DialogResult.OK)
                     {
-                        value = value.Encrypt1(); // AES256 şifreleme
+                        ((Form1)mainForm).SaveGridData(dataGrid);
                     }
-
-                    row.Cells[column.Index].Value = value;
-                    ((Form1)mainForm).SaveGridData(dataGrid);
                 }
             }
             catch (Exception ex)
@@ -349,7 +342,7 @@ namespace EsiCrypto3
             }
         }
 
-        private void UpdateRow(DataGridView dataGrid)
+        public void UpdateRow(DataGridView dataGrid)
         {
             try
             {
@@ -359,27 +352,118 @@ namespace EsiCrypto3
                     return;
                 }
 
-                DataGridViewRow row = dataGrid.SelectedRows[0];
-                foreach (DataGridViewColumn column in dataGrid.Columns)
+                using (var updateForm = new Form())
                 {
-                    string currentValue = row.Cells[column.Index].Value?.ToString() ?? "";
-                    if (column.Name.Contains("Encrypted"))
+                    updateForm.Text = "Veri Güncelleme";
+                    updateForm.Size = new Size(400, (dataGrid.Columns.Count * 40) + 150);
+                    updateForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                    updateForm.StartPosition = FormStartPosition.CenterScreen;
+                    updateForm.MaximizeBox = false;
+
+                    int currentY = 20;
+                    Dictionary<string, TextBox> textBoxes = new Dictionary<string, TextBox>();
+                    DataGridViewRow selectedRow = dataGrid.SelectedRows[0];
+
+                    // Her sütun için Label ve TextBox oluştur
+                    foreach (DataGridViewColumn column in dataGrid.Columns)
                     {
-                        currentValue = currentValue.Decrypt(); // Şifrelenmiş değeri göstermek için çöz
+                        Label label = new Label
+                        {
+                            Text = column.HeaderText,
+                            Location = new Point(20, currentY),
+                            Size = new Size(120, 23)
+                        };
+
+                        TextBox textBox = new TextBox
+                        {
+                            Location = new Point(150, currentY),
+                            Size = new Size(200, 23)
+                        };
+
+                        // Mevcut değeri TextBox'a yerleştir
+                        string currentValue = selectedRow.Cells[column.Index].Value?.ToString() ?? "";
+                        if (column.Name.Contains("Encrypted"))
+                        {
+                            try
+                            {
+                                currentValue = currentValue.Decrypt();
+                            }
+                            catch { /* Şifre çözme hatası durumunda boş bırak */ }
+                        }
+                        textBox.Text = currentValue;
+
+                        updateForm.Controls.Add(label);
+                        updateForm.Controls.Add(textBox);
+                        textBoxes.Add(column.Name, textBox);
+
+                        currentY += 35;
                     }
 
-                    string value = Microsoft.VisualBasic.Interaction.InputBox(
-                        $"'{column.HeaderText}' için yeni değer girin:",
-                        "Veri Güncelleme",
-                        currentValue);
-
-                    if (column.Name.Contains("Encrypted"))
+                    // Tarih ve kullanıcı bilgisi ekle
+                    Label dateTimeLabel = new Label
                     {
-                        value = value.Encrypt1(); // Yeni değeri şifrele
-                    }
+                        Text = $"Tarih: 2025-01-10 13:48:28",
+                        Location = new Point(20, currentY),
+                        Size = new Size(330, 23)
+                    };
+                    updateForm.Controls.Add(dateTimeLabel);
+                    currentY += 25;
 
-                    row.Cells[column.Index].Value = value;
-                    ((Form1)mainForm).SaveGridData(dataGrid);
+                    Label userLabel = new Label
+                    {
+                        Text = $"Kullanıcı: yusufkoksal",
+                        Location = new Point(20, currentY),
+                        Size = new Size(330, 23)
+                    };
+                    updateForm.Controls.Add(userLabel);
+                    currentY += 35;
+
+                    // Güncelle butonu
+                    Button updateButton = new Button
+                    {
+                        Text = "Güncelle",
+                        Location = new Point(150, currentY),
+                        Size = new Size(90, 30),
+                        DialogResult = DialogResult.OK
+                    };
+                    updateButton.Click += (sender, e) =>
+                    {
+                        try
+                        {
+                            foreach (DataGridViewColumn column in dataGrid.Columns)
+                            {
+                                string value = textBoxes[column.Name].Text;
+
+                                if (column.Name.Contains("Encrypted"))
+                                {
+                                    value = value.Encrypt1();
+                                }
+
+                                selectedRow.Cells[column.Index].Value = value;
+                            }
+
+                            ((Form1)mainForm).SaveGridData(dataGrid);
+                            updateForm.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Güncelleme sırasında hata oluştu: {ex.Message}");
+                        }
+                    };
+
+                    // İptal butonu
+                    Button cancelButton = new Button
+                    {
+                        Text = "İptal",
+                        Location = new Point(260, currentY),
+                        Size = new Size(90, 30),
+                        DialogResult = DialogResult.Cancel
+                    };
+
+                    updateForm.Controls.Add(updateButton);
+                    updateForm.Controls.Add(cancelButton);
+
+                    updateForm.ShowDialog();
                 }
             }
             catch (Exception ex)
@@ -388,7 +472,7 @@ namespace EsiCrypto3
             }
         }
 
-        private void DeleteRow(DataGridView dataGrid)
+        public void DeleteRow(DataGridView dataGrid)
         {
             try
             {

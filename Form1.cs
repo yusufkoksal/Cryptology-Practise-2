@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Aes256;
+using EsiCrypto3;
 
 namespace EsiCrypto3
 {
@@ -11,6 +13,7 @@ namespace EsiCrypto3
         public Form1()
         {
             InitializeComponent();
+            form2 = new Form2(this);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -260,7 +263,12 @@ namespace EsiCrypto3
                             Name = control.Name,
                             Text = control.Text,
                             X = control.Location.X,
-                            Y = control.Location.Y
+                            Y = control.Location.Y,
+                            IsDataGrid = control is DataGridView,
+                            Columns = control is DataGridView ?
+                            ((DataGridView)control).Columns.Cast<DataGridViewColumn>()
+                            .Select(c => c.Name).ToList() :
+                            null
                         };
 
                         // Verileri þifrele
@@ -301,7 +309,6 @@ namespace EsiCrypto3
                     {
                         try
                         {
-                            // Þifrelenmiþ verileri çöz
                             info.DecryptData();
                             Control control = null;
 
@@ -309,12 +316,66 @@ namespace EsiCrypto3
                             {
                                 case "Button":
                                     control = new Button();
+                                    if (info.Text == "Düzenle" || info.Text == "Güncelle")
+                                    {
+                                        control.Click += (s, e) =>
+                                        {
+                                            // Button isminden DataGrid ismini al
+                                            string gridName = info.Name.Split('_')[0];
+                                            // Form üzerinde DataGrid'i bul
+                                            var dataGrid = Controls.OfType<DataGridView>()
+                                                .FirstOrDefault(dg => dg.Name == gridName);
+                                            if (dataGrid != null)
+                                            {
+                                                form2.UpdateRow(dataGrid);
+                                            }
+                                        };
+                                    }
+                                    else if (info.Text == "Sil")
+                                    {
+                                        control.Click += (s, e) =>
+                                        {
+                                            string gridName = info.Name.Split('_')[0];
+                                            var dataGrid = Controls.OfType<DataGridView>()
+                                                .FirstOrDefault(dg => dg.Name == gridName);
+                                            if (dataGrid != null)
+                                            {
+                                                form2.DeleteRow(dataGrid);
+                                            }
+                                        };
+                                    }
+                                    else if (info.Text == "Ekle")
+                                    {
+                                        control.Click += (s, e) =>
+                                        {
+                                            string gridName = info.Name.Split('_')[0];
+                                            var dataGrid = Controls.OfType<DataGridView>()
+                                                .FirstOrDefault(dg => dg.Name == gridName);
+                                            if (dataGrid != null)
+                                            {
+                                                form2.AddRow(dataGrid);
+                                            }
+                                        };
+                                    }
                                     break;
+
                                 case "Label":
                                     control = new Label();
                                     break;
                                 case "DataGridView":
-                                    control = new DataGridView();
+                                    var dataGrid = new DataGridView
+                                    {
+                                        Name = info.Name,
+                                        Location = new Point(info.X, info.Y),
+                                        Size = new Size(600, 300),
+                                        AllowUserToAddRows = true,
+                                        AllowUserToDeleteRows = true,
+                                        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                                    };
+                                    control = dataGrid;
+
+                                    // CRUD butonlarýný yeniden oluþtur
+
                                     break;
                             }
 
@@ -329,7 +390,7 @@ namespace EsiCrypto3
                         catch (Exception ex)
                         {
                             MessageBox.Show($"Bileþen yüklenirken hata oluþtu: {ex.Message}");
-                            continue; // Hatalý komponenti atla, diðerlerine devam et
+                            continue;
                         }
                     }
                 }
@@ -340,6 +401,21 @@ namespace EsiCrypto3
             }
         }
 
+
+
+        public Form2 Form2Instance
+        {
+            get
+            {
+                if (form2 == null)
+                {
+                    form2 = new Form2(this);
+                }
+                return form2;
+            }
+        }
+
+
         private void resetButtonClick(object sender, EventArgs e)
         {
             if (File.Exists(COMPONENTS_FILE))
@@ -347,8 +423,174 @@ namespace EsiCrypto3
                 File.WriteAllText(COMPONENTS_FILE, "[]");
             }
         }
+
+
     }
 
 
 }
 
+public class DataEntryForm : Form
+{
+    private Dictionary<string, TextBox> columnTextBoxes;
+    private DataGridView targetDataGrid;
+    private Form1 mainForm;
+    private Label dateTimeLabel;
+    private Label userLabel;
+    private DataGridViewRow existingRow;
+    private bool isUpdate;
+
+
+    public DataEntryForm(DataGridView dataGrid, Form1 mainForm)
+        : this(dataGrid, mainForm, null)
+    {
+    }
+
+
+    public DataEntryForm(DataGridView dataGrid, Form1 mainForm, DataGridViewRow row)
+    {
+        this.targetDataGrid = dataGrid;
+        this.mainForm = mainForm;
+        this.existingRow = row;
+        this.isUpdate = (row != null);
+        columnTextBoxes = new Dictionary<string, TextBox>();
+        InitializeForm();
+    }
+
+    private void InitializeForm()
+    {
+        this.Text = isUpdate ? "Veri Güncelleme" : "Veri Giriþi";
+        this.Size = new Size(400, (targetDataGrid.Columns.Count * 40) + 150);
+        this.FormBorderStyle = FormBorderStyle.FixedDialog;
+        this.StartPosition = FormStartPosition.CenterScreen;
+        this.MaximizeBox = false;
+
+        int currentY = 20;
+
+
+        foreach (DataGridViewColumn column in targetDataGrid.Columns)
+        {
+            Label label = new Label
+            {
+                Text = column.HeaderText,
+                Location = new Point(20, currentY),
+                Size = new Size(120, 23)
+            };
+
+            TextBox textBox = new TextBox
+            {
+                Name = column.Name + "_TextBox",
+                Location = new Point(150, currentY),
+                Size = new Size(200, 23)
+            };
+
+            // Eðer güncelleme ise mevcut deðerleri TextBox'lara yerleþtir
+            if (isUpdate)
+            {
+                string currentValue = existingRow.Cells[column.Index].Value?.ToString() ?? "";
+                if (column.Name.Contains("Encrypted"))
+                {
+                    try
+                    {
+                        currentValue = currentValue.Decrypt();
+                    }
+                    catch { /* Þifre çözme hatasý durumunda boþ býrak */ }
+                }
+                textBox.Text = currentValue;
+            }
+
+            this.Controls.Add(label);
+            this.Controls.Add(textBox);
+            columnTextBoxes.Add(column.Name, textBox);
+
+            currentY += 35;
+        }
+
+        // Tarih ve kullanýcý bilgisi
+        dateTimeLabel = new Label
+        {
+            Text = $"Tarih: {DateTime.Now}",
+            Location = new Point(20, currentY),
+            Size = new Size(330, 23)
+        };
+        this.Controls.Add(dateTimeLabel);
+        currentY += 25;
+
+        userLabel = new Label
+        {
+            Text = $"Kullanýcý: yusufkoksal",
+            Location = new Point(20, currentY),
+            Size = new Size(330, 23)
+        };
+        this.Controls.Add(userLabel);
+        currentY += 35;
+
+        // Kaydet butonu
+        Button saveButton = new Button
+        {
+            Text = isUpdate ? "Güncelle" : "Kaydet",
+            Location = new Point(150, currentY),
+            Size = new Size(90, 30),
+            DialogResult = DialogResult.OK
+        };
+        saveButton.Click += SaveButton_Click;
+
+        // Ýptal butonu
+        Button cancelButton = new Button
+        {
+            Text = "Ýptal",
+            Location = new Point(260, currentY),
+            Size = new Size(90, 30),
+            DialogResult = DialogResult.Cancel
+        };
+
+        this.Controls.Add(saveButton);
+        this.Controls.Add(cancelButton);
+    }
+
+    private void SaveButton_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            if (isUpdate)
+            {
+
+                foreach (DataGridViewColumn column in targetDataGrid.Columns)
+                {
+                    string value = columnTextBoxes[column.Name].Text;
+
+                    if (column.Name.Contains("Encrypted"))
+                    {
+                        value = value.Encrypt1();
+                    }
+
+                    existingRow.Cells[column.Index].Value = value;
+                }
+            }
+            else
+            {
+
+                int newRowIndex = targetDataGrid.Rows.Add();
+                DataGridViewRow newRow = targetDataGrid.Rows[newRowIndex];
+
+                foreach (DataGridViewColumn column in targetDataGrid.Columns)
+                {
+                    string value = columnTextBoxes[column.Name].Text;
+
+                    if (column.Name.Contains("Encrypted"))
+                    {
+                        value = value.Encrypt1();
+                    }
+
+                    newRow.Cells[column.Index].Value = value;
+                }
+            }
+
+            mainForm.SaveGridData(targetDataGrid);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Veri {(isUpdate ? "güncellenirken" : "kaydedilirken")} hata oluþtu: {ex.Message}");
+        }
+    }
+}

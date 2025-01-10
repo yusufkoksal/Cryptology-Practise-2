@@ -14,6 +14,7 @@
         private TextBox componentName;
         private Button btnAdd;
 
+
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
@@ -84,7 +85,7 @@
             // Form ayarları
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(500, 600); // Form boyutunu büyüttük
+            this.ClientSize = new Size(500, 600); 
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;

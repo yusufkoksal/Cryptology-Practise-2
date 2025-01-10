@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EsiCrypto3")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34b590199ddf25fe06dc9bdcd05c291f5fefb8b7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aafacdaee1eeb13c193273d44ef059b040b6972c")]
 [assembly: System.Reflection.AssemblyProductAttribute("EsiCrypto3")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EsiCrypto3")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
