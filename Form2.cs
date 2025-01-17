@@ -40,7 +40,7 @@ namespace EsiCrypto3
             // Sütun sayısı seçici
             columnCountInput = new NumericUpDown
             {
-                Location = new Point(20, 230),
+                Location = new Point(20, 320),
                 Size = new Size(250, 25),
                 Minimum = 1,
                 Maximum = 10,
@@ -51,7 +51,7 @@ namespace EsiCrypto3
             // Sütun özellikleri paneli
             columnPanel = new FlowLayoutPanel
             {
-                Location = new Point(20, 270),
+                Location = new Point(20, 370),
                 Size = new Size(460, 280),
                 FlowDirection = FlowDirection.TopDown,
                 AutoScroll = true,
@@ -176,6 +176,13 @@ namespace EsiCrypto3
                     return;
                 }
 
+                if (!int.TryParse(textBoxWidth.Text, out int width) || !int.TryParse(textBoxHeight.Text, out int height))
+                {
+                    MessageBox.Show("Geçerli genişlik ve yükseklik girin.");
+                    return;
+                }
+
+
                 Control control = null;
                 switch (selectedComponent)
                 {
@@ -201,6 +208,8 @@ namespace EsiCrypto3
                 {
                     control.Name = name;
                     control.Location = new Point(x, y);
+                    control.Width = width;
+                    control.Height = height;
                     mainForm.AddControlToForm(control);
                 }
             }
@@ -215,7 +224,6 @@ namespace EsiCrypto3
             DataGridView dataGrid = new DataGridView
             {
                 Name = name,
-                Size = new Size(600, 200),
                 AllowUserToAddRows = true,
                 AllowUserToDeleteRows = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
@@ -231,55 +239,56 @@ namespace EsiCrypto3
 
                 DataGridViewColumn column = CreateColumn(NameInput.Text, TypeInput.SelectedItem.ToString());
                 dataGrid.Columns.Add(column);
-                CreateCrudButtons(dataGrid);
+
             }
 
 
             return dataGrid;
         }
 
-        private void CreateCrudButtons(DataGridView dataGrid)
-        {
-            // Add Button
-            Button addButton = new Button
-            {
-                Name = $"{dataGrid.Name}_AddBtn",
-                Text = "Ekle",
-                Size = new Size(80, 30),
-                Location = new Point(dataGrid.Right - 270, dataGrid.Bottom - 30)
-            };
-            addButton.Click += (s, e) => AddRow(dataGrid);
+        /* private void CreateCrudButtons(DataGridView dataGrid)
+         {
+             // Add Button
+             Button addButton = new Button
+             {
+                 Name = $"{dataGrid.Name}_AddBtn",
+                 Text = "Ekle",
+                 Size = new Size(80, 30),
+                 Location = new Point(dataGrid.Right - 270, dataGrid.Bottom - 30)
+             };
+             addButton.Click += (s, e) => AddRow(dataGrid);
 
-            // Update Button
-            Button updateButton = new Button
-            {
-                Name = $"{dataGrid.Name}_UpdateBtn",
-                Text = "Güncelle",
-                Size = new Size(80, 30),
-                Location = new Point(dataGrid.Right - 180, dataGrid.Bottom - 30)
-            };
-            updateButton.Click += (s, e) => UpdateRow(dataGrid);
+             // Update Button
+             Button updateButton = new Button
+             {
+                 Name = $"{dataGrid.Name}_UpdateBtn",
+                 Text = "Güncelle",
+                 Size = new Size(80, 30),
+                 Location = new Point(dataGrid.Right - 180, dataGrid.Bottom - 30)
+             };
+             updateButton.Click += (s, e) => UpdateRow(dataGrid);
 
-            // Delete Button
-            Button deleteButton = new Button
-            {
-                Name = $"{dataGrid.Name}_DeleteBtn",
-                Text = "Sil",
-                Size = new Size(80, 30),
-                Location = new Point(dataGrid.Right - 90, dataGrid.Bottom - 30)
-            };
-            deleteButton.Click += (s, e) => DeleteRow(dataGrid);
+             // Delete Button
+             Button deleteButton = new Button
+             {
+                 Name = $"{dataGrid.Name}_DeleteBtn",
+                 Text = "Sil",
+                 Size = new Size(80, 30),
+                 Location = new Point(dataGrid.Right - 90, dataGrid.Bottom - 30)
+             };
+             deleteButton.Click += (s, e) => DeleteRow(dataGrid);
 
-            // Butonları forma ekle
-            this.Controls.Add(addButton);
-            this.Controls.Add(updateButton);
-            this.Controls.Add(deleteButton);
+             // Butonları forma ekle
+             this.Controls.Add(addButton);
+             this.Controls.Add(updateButton);
+             this.Controls.Add(deleteButton);
 
-            // Butonları forma ekle
-            mainForm.AddControlToForm(addButton);
-            mainForm.AddControlToForm(updateButton);
-            mainForm.AddControlToForm(deleteButton);
-        }
+             // Butonları forma ekle
+             mainForm.AddControlToForm(addButton);
+             mainForm.AddControlToForm(updateButton);
+             mainForm.AddControlToForm(deleteButton);
+         }
+        */
 
         private DataGridViewColumn CreateColumn(string name, string type)
         {

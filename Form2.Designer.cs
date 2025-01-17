@@ -13,6 +13,8 @@
         private TextBox textBoxY;
         private TextBox componentName;
         private Button btnAdd;
+        private TextBox textBoxWidth;
+        private TextBox textBoxHeight;
 
 
         /// <summary>
@@ -36,77 +38,105 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-
-            // ComboBox ayarları
             comboBoxComponents = new ComboBox();
+            textBoxX = new TextBox();
+            textBoxY = new TextBox();
+            componentName = new TextBox();
+            btnAdd = new Button();
+            textBoxWidth = new TextBox();
+            textBoxHeight = new TextBox();
+            SuspendLayout();
+            // 
+            // comboBoxComponents
+            // 
+            comboBoxComponents.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxComponents.FormattingEnabled = true;
             comboBoxComponents.Items.AddRange(new object[] { "Button", "Label", "DataGrid" });
-            comboBoxComponents.Location = new Point(20, 20);
+            comboBoxComponents.Location = new Point(23, 31);
+            comboBoxComponents.Margin = new Padding(3, 4, 3, 4);
             comboBoxComponents.Name = "comboBoxComponents";
-            comboBoxComponents.Size = new Size(250, 23);
+            comboBoxComponents.Size = new Size(285, 28);
             comboBoxComponents.TabIndex = 0;
-            comboBoxComponents.DropDownStyle = ComboBoxStyle.DropDownList;
-
-            // X koordinatı için TextBox
-            textBoxX = new TextBox();
-            textBoxX.Location = new Point(20, 60);
+            // 
+            // textBoxX
+            // 
+            textBoxX.Location = new Point(23, 80);
+            textBoxX.Margin = new Padding(3, 4, 3, 4);
             textBoxX.Name = "textBoxX";
             textBoxX.PlaceholderText = "X Koordinatı";
-            textBoxX.Size = new Size(250, 23);
+            textBoxX.Size = new Size(285, 27);
             textBoxX.TabIndex = 1;
-
-            // Y koordinatı için TextBox
-            textBoxY = new TextBox();
-            textBoxY.Location = new Point(20, 100);
+            // 
+            // textBoxY
+            // 
+            textBoxY.Location = new Point(23, 132);
+            textBoxY.Margin = new Padding(3, 4, 3, 4);
             textBoxY.Name = "textBoxY";
             textBoxY.PlaceholderText = "Y Koordinatı";
-            textBoxY.Size = new Size(250, 23);
+            textBoxY.Size = new Size(285, 27);
             textBoxY.TabIndex = 2;
-
-            // Component ismi için TextBox
-            componentName = new TextBox();
-            componentName.Location = new Point(20, 140);
+            // 
+            // componentName
+            // 
+            componentName.Location = new Point(23, 280);
+            componentName.Margin = new Padding(3, 4, 3, 4);
             componentName.Name = "componentName";
             componentName.PlaceholderText = "Component İsmi";
-            componentName.Size = new Size(250, 23);
-            componentName.TabIndex = 3;
-
-            // Ekle butonu
-            btnAdd = new Button();
-            btnAdd.Location = new Point(20, 180);
+            componentName.Size = new Size(285, 27);
+            componentName.TabIndex = 6;
+            // 
+            // btnAdd
+            // 
+            btnAdd.Location = new Point(270, 694);
+            btnAdd.Margin = new Padding(3, 4, 3, 4);
             btnAdd.Name = "btnAdd";
-            btnAdd.Size = new Size(250, 30);
-            btnAdd.TabIndex = 4;
+            btnAdd.Size = new Size(286, 40);
+            btnAdd.TabIndex = 7;
             btnAdd.Text = "Ekle";
             btnAdd.UseVisualStyleBackColor = true;
-            btnAdd.Click += new EventHandler(btnAdd_Click);
-
-            // Form ayarları
-            this.AutoScaleDimensions = new SizeF(7F, 15F);
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(500, 600); 
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.MinimizeBox = true;
-            this.Name = "Form2";
-            this.Text = "Component Ekle";
-            this.Padding = new Padding(20);
-
-            // Kontrolleri forma ekle
-            this.Controls.AddRange(new Control[] {
-        comboBoxComponents,
-        textBoxX,
-        textBoxY,
-        componentName,
-        btnAdd
-    });
-
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            btnAdd.Click += btnAdd_Click;
+            // 
+            // textBoxWidth
+            // 
+            textBoxWidth.Location = new Point(23, 180);
+            textBoxWidth.Name = "textBoxWidth";
+            textBoxWidth.PlaceholderText = "Genişlik";
+            textBoxWidth.Size = new Size(285, 27);
+            textBoxWidth.TabIndex = 4;
+            // 
+            // textBoxHeight
+            // 
+            textBoxHeight.Location = new Point(23, 230);
+            textBoxHeight.Name = "textBoxHeight";
+            textBoxHeight.PlaceholderText = "Yükseklik";
+            textBoxHeight.Size = new Size(285, 27);
+            textBoxHeight.TabIndex = 5;
+            // 
+            // Form2
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(571, 800);
+            Controls.Add(textBoxHeight);
+            Controls.Add(textBoxWidth);
+            Controls.Add(comboBoxComponents);
+            Controls.Add(textBoxX);
+            Controls.Add(textBoxY);
+            Controls.Add(componentName);
+            Controls.Add(btnAdd);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Margin = new Padding(3, 4, 3, 4);
+            MaximizeBox = false;
+            Name = "Form2";
+            Padding = new Padding(23, 27, 23, 27);
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Component Ekle";
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+
     }
 }

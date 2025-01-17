@@ -374,7 +374,6 @@ namespace EsiCrypto3
                                     };
                                     control = dataGrid;
 
-                                    // CRUD butonlarýný yeniden oluþtur
 
                                     break;
                             }
@@ -424,7 +423,32 @@ namespace EsiCrypto3
             }
         }
 
+        private void addButton(object sender, EventArgs e)
+        {
+            var dataGrid = this.Controls.OfType<DataGridView>().FirstOrDefault();
+            if (dataGrid != null)
+            {
+                form2.AddRow(dataGrid);
+            }
+        }
 
+        private void deleteButton(object sender, EventArgs e)
+        {
+            var dataGrid = this.Controls.OfType<DataGridView>().FirstOrDefault();
+            if (dataGrid != null)
+            {
+                form2.DeleteRow(dataGrid);
+            }
+        }
+
+        private void updateButton(object sender, EventArgs e)
+        {
+            var dataGrid = this.Controls.OfType<DataGridView>().FirstOrDefault();
+            if (dataGrid != null)
+            {
+                form2.UpdateRow(dataGrid);
+            }
+        }
     }
 
 
@@ -494,7 +518,10 @@ public class DataEntryForm : Form
                     {
                         currentValue = currentValue.Decrypt();
                     }
-                    catch { /* Þifre çözme hatasý durumunda boþ býrak */ }
+                    catch
+                    {
+
+                    }
                 }
                 textBox.Text = currentValue;
             }
@@ -506,7 +533,7 @@ public class DataEntryForm : Form
             currentY += 35;
         }
 
-        // Tarih ve kullanýcý bilgisi
+
         dateTimeLabel = new Label
         {
             Text = $"Tarih: {DateTime.Now}",
@@ -525,7 +552,7 @@ public class DataEntryForm : Form
         this.Controls.Add(userLabel);
         currentY += 35;
 
-        // Kaydet butonu
+
         Button saveButton = new Button
         {
             Text = isUpdate ? "Güncelle" : "Kaydet",

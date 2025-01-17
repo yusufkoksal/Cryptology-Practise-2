@@ -14,13 +14,18 @@ namespace EsiCrypto3
         [JsonPropertyName("Text")]
         public string Text { get; set; }
 
-        // X, Y ve IsDataGrid için şifrelenmiş değerleri tutacak propertyler
+        // X, Y, Width, Height ve IsDataGrid için şifrelenmiş değerleri tutacak propertyler
         [JsonPropertyName("X")]
         public string EncryptedX { get; set; }
 
         [JsonPropertyName("Y")]
         public string EncryptedY { get; set; }
 
+        [JsonPropertyName("Width")]
+        public string EncryptedWidth { get; set; }
+
+        [JsonPropertyName("Height")]
+        public string EncryptedHeight { get; set; }
 
         [JsonPropertyName("IsDataGrid")]
         public string EncryptedIsDataGrid { get; set; }
@@ -31,9 +36,11 @@ namespace EsiCrypto3
         // Gerçek değerleri tutacak private alanlar
         private int _x;
         private int _y;
+        private int _width;
+        private int _height;
         private bool _isDataGrid;
 
-        // X, Y ve IsDataGrid için public propertyler
+        // X, Y, Width, Height ve IsDataGrid için public propertyler
         [JsonIgnore]
         public int X
         {
@@ -53,6 +60,28 @@ namespace EsiCrypto3
             {
                 _y = value;
                 EncryptedY = value.ToString();
+            }
+        }
+
+        [JsonIgnore]
+        public int Width
+        {
+            get => _width;
+            set
+            {
+                _width = value;
+                EncryptedWidth = value.ToString();
+            }
+        }
+
+        [JsonIgnore]
+        public int Height
+        {
+            get => _height;
+            set
+            {
+                _height = value;
+                EncryptedHeight = value.ToString();
             }
         }
 
@@ -78,9 +107,11 @@ namespace EsiCrypto3
                 if (!string.IsNullOrEmpty(Text))
                     Text = Text.Encrypt1();
 
-                // X, Y ve IsDataGrid değerlerini şifrele
+                // X, Y, Width, Height ve IsDataGrid değerlerini şifrele
                 EncryptedX = X.ToString().Encrypt1();
                 EncryptedY = Y.ToString().Encrypt1();
+                EncryptedWidth = Width.ToString().Encrypt1();
+                EncryptedHeight = Height.ToString().Encrypt1();
                 EncryptedIsDataGrid = IsDataGrid.ToString().Encrypt1();
 
                 // Columns listesini şifrele
@@ -106,7 +137,7 @@ namespace EsiCrypto3
                 if (!string.IsNullOrEmpty(Text))
                     Text = Text.Decrypt();
 
-                // X, Y ve IsDataGrid değerlerini çöz
+                // X, Y, Width, Height ve IsDataGrid değerlerini çöz
                 if (!string.IsNullOrEmpty(EncryptedX))
                 {
                     string decryptedX = EncryptedX.Decrypt();
@@ -117,6 +148,18 @@ namespace EsiCrypto3
                 {
                     string decryptedY = EncryptedY.Decrypt();
                     _y = int.Parse(decryptedY);
+                }
+
+                if (!string.IsNullOrEmpty(EncryptedWidth))
+                {
+                    string decryptedWidth = EncryptedWidth.Decrypt();
+                    _width = int.Parse(decryptedWidth);
+                }
+
+                if (!string.IsNullOrEmpty(EncryptedHeight))
+                {
+                    string decryptedHeight = EncryptedHeight.Decrypt();
+                    _height = int.Parse(decryptedHeight);
                 }
 
                 if (!string.IsNullOrEmpty(EncryptedIsDataGrid))
