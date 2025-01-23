@@ -16,3 +16,4 @@ C:\Users\ysf20\source\repos\EsiCrypto3\EsiCrypto3\obj\Debug\net8.0-windows\EsiCr
 C:\Users\ysf20\source\repos\EsiCrypto3\EsiCrypto3\obj\Debug\net8.0-windows\EsiCrypto3.genruntimeconfig.cache
 C:\Users\ysf20\source\repos\EsiCrypto3\EsiCrypto3\obj\Debug\net8.0-windows\ref\EsiCrypto3.dll
 C:\Users\ysf20\source\repos\EsiCrypto3\EsiCrypto3\obj\Debug\net8.0-windows\EsiCrypto3.sourcelink.json
+C:\Users\ysf20\source\repos\EsiCrypto3\EsiCrypto3\obj\Debug\net8.0-windows\GridDesignerForm.resources

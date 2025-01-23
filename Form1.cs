@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Aes256;
 using EsiCrypto3;
@@ -10,6 +11,7 @@ namespace EsiCrypto3
         private const string GRID_DATA_FILE = @"C:\Users\ysf20\source\repos\EsiCrypto3\EsiCrypto3\griddata.json";
         private Dictionary<string, DataGridData> gridDataDict = new Dictionary<string, DataGridData>();
         private Form2 form2;
+
         public Form1()
         {
             InitializeComponent();
@@ -320,9 +322,9 @@ namespace EsiCrypto3
                                     {
                                         control.Click += (s, e) =>
                                         {
-                                            // Button isminden DataGrid ismini al
+
                                             string gridName = info.Name.Split('_')[0];
-                                            // Form üzerinde DataGrid'i bul
+
                                             var dataGrid = Controls.OfType<DataGridView>()
                                                 .FirstOrDefault(dg => dg.Name == gridName);
                                             if (dataGrid != null)
@@ -449,6 +451,23 @@ namespace EsiCrypto3
                 form2.UpdateRow(dataGrid);
             }
         }
+
+        private void btnEditDataGrid_Click(object sender, EventArgs e)
+        {
+            var dataGrid = this.Controls.OfType<DataGridView>().FirstOrDefault();
+            if (dataGrid != null)
+            {
+                ShowGridDesigner(dataGrid);
+            }
+        }
+
+        private void ShowGridDesigner(DataGridView dataGrid)
+        {
+            using (var designerForm = new GridDesignerForm(this, dataGrid))
+            {
+                designerForm.ShowDialog();
+            }
+        }
     }
 
 
@@ -456,34 +475,21 @@ namespace EsiCrypto3
 
 public class DataEntryForm : Form
 {
-    private Dictionary<string, TextBox> columnTextBoxes;
+    private Dictionary<string, TextBox> textBoxes;
     private DataGridView targetDataGrid;
     private Form1 mainForm;
-    private Label dateTimeLabel;
-    private Label userLabel;
-    private DataGridViewRow existingRow;
-    private bool isUpdate;
 
-
-    public DataEntryForm(DataGridView dataGrid, Form1 mainForm)
-        : this(dataGrid, mainForm, null)
+    public DataEntryForm(DataGridView dataGrid, Form1 form1)
     {
+        targetDataGrid = dataGrid;
+        mainForm = form1;
+        textBoxes = new Dictionary<string, TextBox>();
+        InitializeComponents();
     }
 
-
-    public DataEntryForm(DataGridView dataGrid, Form1 mainForm, DataGridViewRow row)
+    private void InitializeComponents()
     {
-        this.targetDataGrid = dataGrid;
-        this.mainForm = mainForm;
-        this.existingRow = row;
-        this.isUpdate = (row != null);
-        columnTextBoxes = new Dictionary<string, TextBox>();
-        InitializeForm();
-    }
-
-    private void InitializeForm()
-    {
-        this.Text = isUpdate ? "Veri Güncelleme" : "Veri Giriþi";
+        this.Text = "Veri Giriþi";
         this.Size = new Size(400, (targetDataGrid.Columns.Count * 40) + 150);
         this.FormBorderStyle = FormBorderStyle.FixedDialog;
         this.StartPosition = FormStartPosition.CenterScreen;
@@ -503,47 +509,37 @@ public class DataEntryForm : Form
 
             TextBox textBox = new TextBox
             {
-                Name = column.Name + "_TextBox",
+                Name = column.Name,
                 Location = new Point(150, currentY),
-                Size = new Size(200, 23)
+                Size = new Size(200, 23),
+                Tag = column.ValueType
             };
 
-            // Eðer güncelleme ise mevcut deðerleri TextBox'lara yerleþtir
-            if (isUpdate)
-            {
-                string currentValue = existingRow.Cells[column.Index].Value?.ToString() ?? "";
-                if (column.Name.Contains("Encrypted"))
-                {
-                    try
-                    {
-                        currentValue = currentValue.Decrypt();
-                    }
-                    catch
-                    {
 
-                    }
-                }
-                textBox.Text = currentValue;
-            }
+            string tipUyarisi = GetDataTypeHint(column);
+            textBox.PlaceholderText = tipUyarisi;
+
+
+            textBox.Leave += TextBox_Leave;
 
             this.Controls.Add(label);
             this.Controls.Add(textBox);
-            columnTextBoxes.Add(column.Name, textBox);
+            textBoxes.Add(column.Name, textBox);
 
             currentY += 35;
         }
 
 
-        dateTimeLabel = new Label
+        Label dateTimeLabel = new Label
         {
-            Text = $"Tarih: {DateTime.Now}",
+            Text = $"Tarih: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}",
             Location = new Point(20, currentY),
             Size = new Size(330, 23)
         };
         this.Controls.Add(dateTimeLabel);
         currentY += 25;
 
-        userLabel = new Label
+        Label userLabel = new Label
         {
             Text = $"Kullanýcý: yusufkoksal",
             Location = new Point(20, currentY),
@@ -552,17 +548,15 @@ public class DataEntryForm : Form
         this.Controls.Add(userLabel);
         currentY += 35;
 
-
         Button saveButton = new Button
         {
-            Text = isUpdate ? "Güncelle" : "Kaydet",
+            Text = "Kaydet",
             Location = new Point(150, currentY),
-            Size = new Size(90, 30),
-            DialogResult = DialogResult.OK
+            Size = new Size(90, 30)
         };
         saveButton.Click += SaveButton_Click;
 
-        // Ýptal butonu
+
         Button cancelButton = new Button
         {
             Text = "Ýptal",
@@ -575,49 +569,111 @@ public class DataEntryForm : Form
         this.Controls.Add(cancelButton);
     }
 
+    private string GetDataTypeHint(DataGridViewColumn column)
+    {
+        if (column is DataGridViewCheckBoxColumn)
+            return "true/false";
+        else if (column.ValueType == typeof(DateTime))
+            return "YYYY-MM-DD";
+        else if (column.ValueType == typeof(double))
+            return "Sayýsal deðer (örn: 123.45)";
+        else if (column.ValueType == typeof(decimal))
+            return "Para birimi (örn: 123.45)";
+        else
+            return "";
+    }
+
+    private void TextBox_Leave(object sender, EventArgs e)
+    {
+        TextBox textBox = (TextBox)sender;
+        string value = textBox.Text.Trim();
+
+        if (string.IsNullOrEmpty(value))
+            return;
+
+        try
+        {
+            ValidateDataTypeInput(textBox.Name, value);
+            textBox.BackColor = SystemColors.Window;
+        }
+        catch (Exception ex)
+        {
+            textBox.BackColor = Color.LightPink;
+            MessageBox.Show(ex.Message, "Veri Tipi Hatasý", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            textBox.Focus();
+        }
+    }
+
+    private void ValidateDataTypeInput(string columnName, string value)
+    {
+        DataGridViewColumn column = targetDataGrid.Columns[columnName];
+
+        if (column is DataGridViewCheckBoxColumn)
+        {
+            if (!bool.TryParse(value.ToLower(), out _))
+                throw new Exception("Bu alan için 'true' veya 'false' deðeri giriniz.");
+        }
+        else if (column.ValueType == typeof(DateTime))
+        {
+            if (!DateTime.TryParse(value, out _))
+                throw new Exception("Geçerli bir tarih giriniz (YYYY-MM-DD).");
+        }
+        else if (column.ValueType == typeof(double))
+        {
+            if (!double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                throw new Exception("Geçerli bir sayýsal deðer giriniz.");
+        }
+        else if (column.ValueType == typeof(decimal))
+        {
+            if (!decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                throw new Exception("Geçerli bir para birimi deðeri giriniz.");
+        }
+    }
+
     private void SaveButton_Click(object sender, EventArgs e)
     {
         try
         {
-            if (isUpdate)
+
+            foreach (var kvp in textBoxes)
             {
+                string columnName = kvp.Key;
+                string value = kvp.Value.Text.Trim();
 
-                foreach (DataGridViewColumn column in targetDataGrid.Columns)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    string value = columnTextBoxes[column.Name].Text;
-
-                    if (column.Name.Contains("Encrypted"))
-                    {
-                        value = value.Encrypt1();
-                    }
-
-                    existingRow.Cells[column.Index].Value = value;
+                    ValidateDataTypeInput(columnName, value);
                 }
             }
-            else
+
+
+            int rowIndex = targetDataGrid.Rows.Add();
+            foreach (DataGridViewColumn column in targetDataGrid.Columns)
             {
+                string value = textBoxes[column.Name].Text;
 
-                int newRowIndex = targetDataGrid.Rows.Add();
-                DataGridViewRow newRow = targetDataGrid.Rows[newRowIndex];
-
-                foreach (DataGridViewColumn column in targetDataGrid.Columns)
+                if (column.Name.Contains("Encrypted"))
                 {
-                    string value = columnTextBoxes[column.Name].Text;
-
-                    if (column.Name.Contains("Encrypted"))
-                    {
-                        value = value.Encrypt1();
-                    }
-
-                    newRow.Cells[column.Index].Value = value;
+                    value = value.Encrypt1();
                 }
+                else if (column is DataGridViewCheckBoxColumn)
+                {
+                    value = bool.Parse(value.ToLower()).ToString();
+                }
+
+                targetDataGrid.Rows[rowIndex].Cells[column.Index].Value = value;
             }
 
             mainForm.SaveGridData(targetDataGrid);
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Veri {(isUpdate ? "güncellenirken" : "kaydedilirken")} hata oluþtu: {ex.Message}");
+            MessageBox.Show($"Veri kaydedilirken hata oluþtu: {ex.Message}",
+                          "Hata",
+                          MessageBoxButtons.OK,
+                          MessageBoxIcon.Error);
         }
     }
 }
